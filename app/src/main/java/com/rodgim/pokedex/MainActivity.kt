@@ -19,7 +19,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.rodgim.pokedex.ui.pokemonlist.PokemonListScreen
 import com.rodgim.pokedex.ui.theme.PokedexTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
