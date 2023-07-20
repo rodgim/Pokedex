@@ -8,7 +8,8 @@ data class Pokemon(
     val height: Int,
     val weight: Int,
     val types: List<PokemonType>,
-    val stats: List<PokemonStat>
+    val stats: List<PokemonStat>,
+    val sprites: Sprites
 )
 
 data class PokemonType(
@@ -31,4 +32,9 @@ data class PokemonStat(
 data class PokemonBaseStat(
     val name: String,
     val url: String
+)
+
+data class Sprites(
+    @SerializedName("front_default")
+    val frontDefault: String
 )
