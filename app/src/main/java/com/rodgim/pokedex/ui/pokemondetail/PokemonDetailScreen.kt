@@ -49,7 +49,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.rodgim.pokedex.R
@@ -65,7 +64,7 @@ import kotlin.math.round
 fun PokemonDetailScreen(
     dominantColor: Color,
     pokemonName: String,
-    navController: NavController,
+    goBack: () -> Unit,
     topPadding: Dp = 20.dp,
     pokemonImageSize: Dp = 200.dp,
     viewModel: PokemonDetailViewModel = hiltViewModel()
@@ -73,6 +72,7 @@ fun PokemonDetailScreen(
     val pokemonDetail = produceState<UiPokemonDetailState>(initialValue = UiPokemonDetailState.Loading) {
         value = viewModel.getPokemonDetail(pokemonName)
     }.value
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -80,7 +80,7 @@ fun PokemonDetailScreen(
             .padding(bottom = 16.dp)
     ){
         PokemonDetailTopSection(
-            navController = navController,
+            goBack = goBack,
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.2f)
@@ -136,7 +136,7 @@ fun PokemonDetailScreen(
 
 @Composable
 fun PokemonDetailTopSection(
-    navController: NavController,
+    goBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -159,7 +159,7 @@ fun PokemonDetailTopSection(
                 .size(36.dp)
                 .offset(16.dp, 16.dp)
                 .clickable {
-                    navController.popBackStack()
+                    goBack()
                 }
         )
     }

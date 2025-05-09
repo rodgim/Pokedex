@@ -29,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
@@ -39,7 +40,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -47,7 +47,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.rodgim.pokedex.R
@@ -56,7 +55,7 @@ import com.rodgim.pokedex.ui.theme.RobotoCondensed
 
 @Composable
 fun PokemonListScreen(
-    navController: NavController,
+    onPokemonSelected: (Color, String) -> Unit,
     viewModel: PokemonListViewModel = hiltViewModel(),
 ) {
     Surface(
@@ -81,7 +80,7 @@ fun PokemonListScreen(
                 viewModel.searchForPokemon(it)
             }
             Spacer(modifier = Modifier.height(16.dp))
-            PokemonList(navController = navController)
+            PokemonList(onPokemonSelected = onPokemonSelected)
         }
     }
 }
@@ -92,7 +91,7 @@ fun SearchBar(
     hint: String = "",
     onSearch: (String) -> Unit = {}
 ) {
-    var text by remember {
+    var text by rememberSaveable {
         mutableStateOf("")
     }
     var isHintDisplayed by remember {
@@ -131,7 +130,7 @@ fun SearchBar(
 
 @Composable
 fun PokemonList(
-    navController: NavController,
+    onPokemonSelected: (Color, String) -> Unit,
     viewModel: PokemonListViewModel = hiltViewModel(),
 ) {
     val pokemonList by remember { viewModel.pokemonList }
@@ -152,7 +151,7 @@ fun PokemonList(
                     viewModel.loadPokemonPaginated()
                 }
             }
-            PokedexRow(rowIndex = it, entries = pokemonList, navController = navController)
+            PokedexRow(rowIndex = it, entries = pokemonList, onPokemonSelected = onPokemonSelected)
         }
     }
 
@@ -172,9 +171,58 @@ fun PokemonList(
 }
 
 @Composable
+fun PokedexRow(
+    rowIndex: Int,
+    entries: List<PokedexListEntry>,
+    onPokemonSelected: (Color, String) -> Unit,
+) {
+    Column {
+        Row {
+            PokedexEntry(
+                entry = entries[rowIndex * 2],
+                onPokemonSelected = onPokemonSelected,
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            if (entries.size >= rowIndex * 2 + 2) {
+                PokedexEntry(
+                    entry = entries[rowIndex * 2 + 1],
+                    onPokemonSelected = onPokemonSelected,
+                    modifier = Modifier.weight(1f)
+                )
+            } else {
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+fun RetrySection(
+    error: String,
+    onRetry: () -> Unit
+) {
+    Column {
+        Text(
+            text = error,
+            color = Color.Red,
+            fontSize = 18.sp
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = { onRetry() },
+            modifier = Modifier.align(CenterHorizontally)
+        ) {
+            Text(text = "Retry")
+        }
+    }
+}
+
+@Composable
 fun PokedexEntry(
     entry: PokedexListEntry,
-    navController: NavController,
+    onPokemonSelected: (Color, String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PokemonListViewModel = hiltViewModel()
 ) {
@@ -198,9 +246,7 @@ fun PokedexEntry(
                 )
             )
             .clickable {
-                navController.navigate(
-                    "pokemon_detail_screen/${dominantColor.toArgb()}/${entry.pokemonName}"
-                )
+                onPokemonSelected(dominantColor, entry.pokemonName)
             }
     ) {
         Column {
@@ -232,55 +278,6 @@ fun PokedexEntry(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
-        }
-    }
-}
-
-@Composable
-fun PokedexRow(
-    rowIndex: Int,
-    entries: List<PokedexListEntry>,
-    navController: NavController
-) {
-    Column {
-        Row {
-            PokedexEntry(
-                entry = entries[rowIndex * 2],
-                navController = navController,
-                modifier = Modifier.weight(1f)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            if (entries.size >= rowIndex * 2 + 2) {
-                PokedexEntry(
-                    entry = entries[rowIndex * 2 + 1],
-                    navController = navController,
-                    modifier = Modifier.weight(1f)
-                )
-            } else {
-                Spacer(modifier = Modifier.weight(1f))
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-
-@Composable
-fun RetrySection(
-    error: String,
-    onRetry: () -> Unit
-) {
-    Column {
-        Text(
-            text = error,
-            color = Color.Red,
-            fontSize = 18.sp
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(
-            onClick = { onRetry() },
-            modifier = Modifier.align(CenterHorizontally)
-        ) {
-            Text(text = "Retry")
         }
     }
 }
